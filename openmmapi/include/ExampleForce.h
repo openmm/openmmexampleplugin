@@ -96,6 +96,14 @@ public:
      * in a bond cannot be changed, nor can new bonds be added.
      */
     void updateParametersInContext(OpenMM::Context& context);
+    /**
+     * Returns true if the force uses periodic boundary conditions and false otherwise. Your force should implement this
+     * method appropriately to ensure that `System.usesPeriodicBoundaryConditions()` works for all systems containing
+     * your force.
+     */
+    bool usesPeriodicBoundaryConditions() const {
+        return false;
+    }
 protected:
     OpenMM::ForceImpl* createImpl() const;
 private:
