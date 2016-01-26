@@ -1,7 +1,7 @@
 %module exampleplugin
 
-%import(module="simtk.openmm") "OpenMMSwigHeaders.i"
-
+%import(module="simtk.openmm") "swig/OpenMMSwigHeaders.i"
+%include "swig/typemaps.i"
 
 /*
  * The following lines are needed to handle std::vector.
@@ -24,27 +24,10 @@ namespace std {
 #include "openmm/RPMDMonteCarloBarostat.h"
 %}
 
-
-/*
- * The code below strips all units before the wrapper
- * functions are called. This code also converts numpy
- * arrays to lists.
-*/
-
 %pythoncode %{
 import simtk.openmm as mm
 import simtk.unit as unit
 %}
-
-
-/* strip the units off of all input arguments */
-%pythonprepend %{
-try:
-    args=mm.stripUnits(args)
-except UnboundLocalError:
-    pass
-%}
-
 
 /*
  * Add units to function outputs.
@@ -52,7 +35,7 @@ except UnboundLocalError:
 %pythonappend ExamplePlugin::ExampleForce::getBondParameters(int index, int& particle1, int& particle2,
                                                              double& length, double& k) const %{
     val[2] = unit.Quantity(val[2], unit.nanometer)
-    val[3] = unit.Quantity(val[3], unit.kilojoule_per_mole / (unit.nanometer * unit.nanometer))
+    val[3] = unit.Quantity(val[3], unit.kilojoule_per_mole/unit.nanometer**4)
 %}
 
 
@@ -86,4 +69,3 @@ public:
 };
 
 }
-
