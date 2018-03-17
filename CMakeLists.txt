@@ -9,7 +9,10 @@ SET(OPENMM_DIR "/usr/local/openmm" CACHE PATH "Where OpenMM is installed")
 INCLUDE_DIRECTORIES("${OPENMM_DIR}/include")
 LINK_DIRECTORIES("${OPENMM_DIR}/lib" "${OPENMM_DIR}/lib/plugins")
 
-# set flags for linking on mac
+# Specify the C++ version we are building for.
+SET (CMAKE_CXX_STANDARD 11)
+
+# Set flags for linking on mac
 IF(APPLE)
     SET (CMAKE_INSTALL_NAME_DIR "@rpath")
     SET(EXTRA_COMPILE_FLAGS "-msse2 -stdlib=libc++")
