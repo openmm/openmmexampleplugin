@@ -80,11 +80,15 @@ public:
     %clear double& k;
 
     /*
-     * Add a function for casting a Force to an ExampleForce.
+     * Add methods for casting a Force to an ExampleForce.
     */
     %extend {
         static ExamplePlugin::ExampleForce& cast(OpenMM::Force& force) {
             return dynamic_cast<ExamplePlugin::ExampleForce&>(force);
+        }
+
+        static bool isinstance(OpenMM::Force& force) {
+            return (dynamic_cast<ExamplePlugin::ExampleForce*>(&force) != NULL);
         }
     }
 };
