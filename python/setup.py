@@ -9,7 +9,7 @@ exampleplugin_header_dir = '@EXAMPLEPLUGIN_HEADER_DIR@'
 exampleplugin_library_dir = '@EXAMPLEPLUGIN_LIBRARY_DIR@'
 
 # setup extra compile and link arguments on Mac
-extra_compile_args = []
+extra_compile_args = ['-std=c++11']
 extra_link_args = []
 
 if platform.system() == 'Darwin':

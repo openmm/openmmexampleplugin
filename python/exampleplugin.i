@@ -38,6 +38,18 @@ import simtk.unit as unit
     val[3] = unit.Quantity(val[3], unit.kilojoule_per_mole/unit.nanometer**4)
 %}
 
+/*
+ * Convert C++ exceptions to Python exceptions.
+*/
+%exception {
+    try {
+        $action
+    } catch (std::exception &e) {
+        PyErr_SetString(PyExc_Exception, const_cast<char*>(e.what()));
+        return NULL;
+    }
+}
+
 
 namespace ExamplePlugin {
 
@@ -66,6 +78,19 @@ public:
     %clear int& particle2;
     %clear double& length;
     %clear double& k;
+
+    /*
+     * Add methods for casting a Force to an ExampleForce.
+    */
+    %extend {
+        static ExamplePlugin::ExampleForce& cast(OpenMM::Force& force) {
+            return dynamic_cast<ExamplePlugin::ExampleForce&>(force);
+        }
+
+        static bool isinstance(OpenMM::Force& force) {
+            return (dynamic_cast<ExamplePlugin::ExampleForce*>(&force) != NULL);
+        }
+    }
 };
 
 }
