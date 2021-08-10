@@ -1,7 +1,7 @@
 OpenMM Example Plugin
 =====================
 
-This project is an example of how to write a plugin for [OpenMM](https://simtk.org/home/openmm).
+This project is an example of how to write a plugin for [OpenMM](https://openmm.org).
 It includes nearly everything you would want in a real plugin, including implementations for the
 Reference, OpenCL, and CUDA platforms, serialization support, test cases, and a Python API.  It
 is useful as a starting point for anyone who wants to write a plugin.
@@ -84,6 +84,12 @@ run the test suite.
 OpenCL and CUDA Kernels
 =======================
 
+The OpenCL and CUDA versions of the force are implemented with the common compute framework.
+This allows us to write a single class (`CommonCalcExampleForceKernel`) that provides an
+implementation for both platforms at the same time.  Device code is written in a subset of
+the OpenCL and CUDA languages, with a few macro and function definitions to make them
+identical.
+
 The OpenCL and CUDA platforms compile all of their kernels from source at runtime.  This
 requires you to store all your kernel source in a way that makes it accessible at runtime.  That
 turns out to be harder than you might think: simply storing source files on disk is brittle,
@@ -93,13 +99,13 @@ strings in the code, but that is very inconvenient to edit and maintain, especia
 doesn't have a clean syntax for multi-line strings.
 
 This project (like OpenMM itself) uses a hybrid mechanism that provides the best of both
-approaches.  The source code for the OpenCL and CUDA implementations each include a "kernels"
-directory.  At build time, a CMake script loads every .cl (for OpenCL) or .cu (for CUDA) file
-contained in the directory and generates a class with all the file contents as strings.  For
-example, the OpenCL kernels directory contains a single file called exampleForce.cl.  You can
+approaches.  The source code for the kernels is found in the `platforms/common/src/kernels`
+directory.  At build time, a CMake script loads every .cc file contained in the directory
+and generates a class with all the file contents as strings.  For the example plugin, the
+directory contains a single file called exampleForce.cc.  You can
 put anything you want into this file, and then C++ code can access the content of that file
-as `OpenCLExampleKernelSources::exampleForce`.  If you add more .cl files to this directory,
-correspondingly named variables will automatically be added to `OpenCLExampleKernelSources`.
+as `CommonExampleKernelSources::exampleForce`.  If you add more .cc files to this directory,
+correspondingly named variables will automatically be added to `CommonExampleKernelSources`.
 
 
 Python API
@@ -111,7 +117,7 @@ It then generates a Python extension module exposing the C++ API in Python.
 
 When building OpenMM's Python API, the interface file is generated automatically from the C++
 API.  That guarantees the C++ and Python APIs are always synchronized with each other and avoids
-the potential bugs that would come from have duplicate definitions.  It takes a lot of complex
+the potential bugs that would come from having duplicate definitions.  It takes a lot of complex
 processing to do that, though, and for a single plugin it's far simpler to just write the
 interface file by hand.  You will find it in the "python" directory.
 
@@ -136,7 +142,7 @@ Simbios, the NIH National Center for Physics-Based Simulation of
 Biological Structures at Stanford, funded under the NIH Roadmap for
 Medical Research, grant U54 GM072970. See https://simtk.org.
 
-Portions copyright (c) 2014 Stanford University and the Authors.
+Portions copyright (c) 2014-2021 Stanford University and the Authors.
 
 Authors: Peter Eastman
 
