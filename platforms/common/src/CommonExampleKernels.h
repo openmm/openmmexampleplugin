@@ -1,5 +1,5 @@
-#ifndef OPENCL_EXAMPLE_KERNELS_H_
-#define OPENCL_EXAMPLE_KERNELS_H_
+#ifndef COMMON_EXAMPLE_KERNELS_H_
+#define COMMON_EXAMPLE_KERNELS_H_
 
 /* -------------------------------------------------------------------------- *
  *                                   OpenMM                                   *
@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2014 Stanford University and the Authors.           *
+ * Portions copyright (c) 2014-2021 Stanford University and the Authors.      *
  * Authors: Peter Eastman                                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -33,21 +33,19 @@
  * -------------------------------------------------------------------------- */
 
 #include "ExampleKernels.h"
-#include "openmm/opencl/OpenCLContext.h"
-#include "openmm/opencl/OpenCLArray.h"
+#include "openmm/common/ComputeContext.h"
+#include "openmm/common/ComputeArray.h"
 
 namespace ExamplePlugin {
 
 /**
  * This kernel is invoked by ExampleForce to calculate the forces acting on the system and the energy of the system.
  */
-class OpenCLCalcExampleForceKernel : public CalcExampleForceKernel {
+class CommonCalcExampleForceKernel : public CalcExampleForceKernel {
 public:
-    OpenCLCalcExampleForceKernel(std::string name, const OpenMM::Platform& platform, OpenMM::OpenCLContext& cl, const OpenMM::System& system) :
-            CalcExampleForceKernel(name, platform), hasInitializedKernel(false), cl(cl), system(system), params(NULL) {
+    CommonCalcExampleForceKernel(std::string name, const OpenMM::Platform& platform, OpenMM::ComputeContext& cc, const OpenMM::System& system) :
+            CalcExampleForceKernel(name, platform), hasInitializedKernel(false), cc(cc), system(system) {
     }
-
-    ~OpenCLCalcExampleForceKernel();
     /**
      * Initialize the kernel.
      * 
@@ -74,11 +72,11 @@ public:
 private:
     int numBonds;
     bool hasInitializedKernel;
-    OpenMM::OpenCLContext& cl;
+    OpenMM::ComputeContext& cc;
     const OpenMM::System& system;
-    OpenMM::OpenCLArray* params;
+    OpenMM::ComputeArray params;
 };
 
 } // namespace ExamplePlugin
 
-#endif /*OPENCL_EXAMPLE_KERNELS_H_*/
+#endif /*COMMON_EXAMPLE_KERNELS_H_*/

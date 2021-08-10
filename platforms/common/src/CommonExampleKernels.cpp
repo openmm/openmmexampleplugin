@@ -6,7 +6,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2014 Stanford University and the Authors.           *
+ * Portions copyright (c) 2014-2021 Stanford University and the Authors.      *
  * Authors: Peter Eastman                                                     *
  * Contributors:                                                              *
  *                                                                            *
@@ -29,19 +29,19 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "OpenCLExampleKernels.h"
-#include "OpenCLExampleKernelSources.h"
+#include "CommonExampleKernels.h"
+#include "CommonExampleKernelSources.h"
+#include "openmm/common/BondedUtilities.h"
+#include "openmm/common/ComputeForceInfo.h"
 #include "openmm/internal/ContextImpl.h"
-#include "openmm/opencl/OpenCLBondedUtilities.h"
-#include "openmm/opencl/OpenCLForceInfo.h"
 
 using namespace ExamplePlugin;
 using namespace OpenMM;
 using namespace std;
 
-class OpenCLExampleForceInfo : public OpenCLForceInfo {
+class CommonExampleForceInfo : public ComputeForceInfo {
 public:
-    OpenCLExampleForceInfo(const ExampleForce& force) : OpenCLForceInfo(0), force(force) {
+    CommonExampleForceInfo(const ExampleForce& force) : force(force) {
     }
     int getNumParticleGroups() {
         return force.getNumBonds();
@@ -65,41 +65,36 @@ private:
     const ExampleForce& force;
 };
 
-OpenCLCalcExampleForceKernel::~OpenCLCalcExampleForceKernel() {
-    if (params != NULL)
-        delete params;
-}
-
-void OpenCLCalcExampleForceKernel::initialize(const System& system, const ExampleForce& force) {
-    int numContexts = cl.getPlatformData().contexts.size();
-    int startIndex = cl.getContextIndex()*force.getNumBonds()/numContexts;
-    int endIndex = (cl.getContextIndex()+1)*force.getNumBonds()/numContexts;
+void CommonCalcExampleForceKernel::initialize(const System& system, const ExampleForce& force) {
+    int numContexts = cc.getNumContexts();
+    int startIndex = cc.getContextIndex()*force.getNumBonds()/numContexts;
+    int endIndex = (cc.getContextIndex()+1)*force.getNumBonds()/numContexts;
     numBonds = endIndex-startIndex;
     if (numBonds == 0)
         return;
     vector<vector<int> > atoms(numBonds, vector<int>(2));
-    params = OpenCLArray::create<mm_float2>(cl, numBonds, "bondParams");
+    params.initialize<mm_float2>(cc, numBonds, "bondParams");
     vector<mm_float2> paramVector(numBonds);
     for (int i = 0; i < numBonds; i++) {
         double length, k;
         force.getBondParameters(startIndex+i, atoms[i][0], atoms[i][1], length, k);
-        paramVector[i] = mm_float2((cl_float) length, (cl_float) k);
+        paramVector[i] = mm_float2((float) length, (float) k);
     }
-    params->upload(paramVector);
+    params.upload(paramVector);
     map<string, string> replacements;
-    replacements["PARAMS"] = cl.getBondedUtilities().addArgument(params->getDeviceBuffer(), "float2");
-    cl.getBondedUtilities().addInteraction(atoms, cl.replaceStrings(OpenCLExampleKernelSources::exampleForce, replacements), force.getForceGroup());
-    cl.addForce(new OpenCLExampleForceInfo(force));
+    replacements["PARAMS"] = cc.getBondedUtilities().addArgument(params, "float2");
+    cc.getBondedUtilities().addInteraction(atoms, cc.replaceStrings(CommonExampleKernelSources::exampleForce, replacements), force.getForceGroup());
+    cc.addForce(new CommonExampleForceInfo(force));
 }
 
-double OpenCLCalcExampleForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
+double CommonCalcExampleForceKernel::execute(ContextImpl& context, bool includeForces, bool includeEnergy) {
     return 0.0;
 }
 
-void OpenCLCalcExampleForceKernel::copyParametersToContext(ContextImpl& context, const ExampleForce& force) {
-    int numContexts = cl.getPlatformData().contexts.size();
-    int startIndex = cl.getContextIndex()*force.getNumBonds()/numContexts;
-    int endIndex = (cl.getContextIndex()+1)*force.getNumBonds()/numContexts;
+void CommonCalcExampleForceKernel::copyParametersToContext(ContextImpl& context, const ExampleForce& force) {
+    int numContexts = cc.getNumContexts();
+    int startIndex = cc.getContextIndex()*force.getNumBonds()/numContexts;
+    int endIndex = (cc.getContextIndex()+1)*force.getNumBonds()/numContexts;
     if (numBonds != endIndex-startIndex)
         throw OpenMMException("updateParametersInContext: The number of bonds has changed");
     if (numBonds == 0)
@@ -112,12 +107,12 @@ void OpenCLCalcExampleForceKernel::copyParametersToContext(ContextImpl& context,
         int atom1, atom2;
         double length, k;
         force.getBondParameters(startIndex+i, atom1, atom2, length, k);
-        paramVector[i] = mm_float2((cl_float) length, (cl_float) k);
+        paramVector[i] = mm_float2((float) length, (float) k);
     }
-    params->upload(paramVector);
+    params.upload(paramVector);
     
     // Mark that the current reordering may be invalid.
     
-    cl.invalidateMolecules();
+    cc.invalidateMolecules();
 }
 

@@ -1,5 +1,5 @@
-#ifndef OPENMM_OPENCLEXAMPLEKERNELSOURCES_H_
-#define OPENMM_OPENCLEXAMPLEKERNELSOURCES_H_
+#ifndef OPENMM_COMMONEXAMPLEKERNELSOURCES_H_
+#define OPENMM_COMMONEXAMPLEKERNELSOURCES_H_
 
 /* -------------------------------------------------------------------------- *
  *                                   OpenMM                                   *
@@ -37,16 +37,16 @@
 namespace ExamplePlugin {
 
 /**
- * This class is a central holding place for the source code of OpenCL kernels.
- * The CMake build script inserts declarations into it based on the .cl files in the
+ * This class is a central holding place for the source code of common kernels.
+ * The CMake build script inserts declarations into it based on the .cc files in the
  * kernels subfolder.
  */
 
-class OpenCLExampleKernelSources {
+class CommonExampleKernelSources {
 public:
-@CL_FILE_DECLARATIONS@
+@KERNEL_FILE_DECLARATIONS@
 };
 
 } // namespace ExamplePlugin
 
-#endif /*OPENMM_OPENCLEXAMPLEKERNELSOURCES_H_*/
+#endif /*OPENMM_COMMONEXAMPLEKERNELSOURCES_H_*/
