@@ -32,7 +32,8 @@
 #include <exception>
 
 #include "OpenCLExampleKernelFactory.h"
-#include "OpenCLExampleKernels.h"
+#include "CommonExampleKernels.h"
+#include "openmm/opencl/OpenCLContext.h"
 #include "openmm/internal/windowsExport.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
@@ -67,6 +68,6 @@ extern "C" OPENMM_EXPORT void registerExampleOpenCLKernelFactories() {
 KernelImpl* OpenCLExampleKernelFactory::createKernelImpl(std::string name, const Platform& platform, ContextImpl& context) const {
     OpenCLContext& cl = *static_cast<OpenCLPlatform::PlatformData*>(context.getPlatformData())->contexts[0];
     if (name == CalcExampleForceKernel::Name())
-        return new OpenCLCalcExampleForceKernel(name, platform, cl, context.getSystem());
+        return new CommonCalcExampleForceKernel(name, platform, cl, context.getSystem());
     throw OpenMMException((std::string("Tried to create kernel with illegal kernel name '")+name+"'").c_str());
 }

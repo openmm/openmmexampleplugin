@@ -32,7 +32,8 @@
 #include <exception>
 
 #include "CudaExampleKernelFactory.h"
-#include "CudaExampleKernels.h"
+#include "CommonExampleKernels.h"
+#include "openmm/cuda/CudaContext.h"
 #include "openmm/internal/windowsExport.h"
 #include "openmm/internal/ContextImpl.h"
 #include "openmm/OpenMMException.h"
@@ -67,6 +68,6 @@ extern "C" OPENMM_EXPORT void registerExampleCudaKernelFactories() {
 KernelImpl* CudaExampleKernelFactory::createKernelImpl(std::string name, const Platform& platform, ContextImpl& context) const {
     CudaContext& cu = *static_cast<CudaPlatform::PlatformData*>(context.getPlatformData())->contexts[0];
     if (name == CalcExampleForceKernel::Name())
-        return new CudaCalcExampleForceKernel(name, platform, cu, context.getSystem());
+        return new CommonCalcExampleForceKernel(name, platform, cu, context.getSystem());
     throw OpenMMException((std::string("Tried to create kernel with illegal kernel name '")+name+"'").c_str());
 }
