@@ -33,6 +33,7 @@
 #include "CommonExampleKernelSources.h"
 #include "openmm/common/BondedUtilities.h"
 #include "openmm/common/ComputeForceInfo.h"
+#include "openmm/common/ContextSelector.h"
 #include "openmm/internal/ContextImpl.h"
 
 using namespace ExamplePlugin;
@@ -66,6 +67,7 @@ private:
 };
 
 void CommonCalcExampleForceKernel::initialize(const System& system, const ExampleForce& force) {
+    ContextSelector selector(cc);
     int numContexts = cc.getNumContexts();
     int startIndex = cc.getContextIndex()*force.getNumBonds()/numContexts;
     int endIndex = (cc.getContextIndex()+1)*force.getNumBonds()/numContexts;
@@ -92,6 +94,7 @@ double CommonCalcExampleForceKernel::execute(ContextImpl& context, bool includeF
 }
 
 void CommonCalcExampleForceKernel::copyParametersToContext(ContextImpl& context, const ExampleForce& force) {
+    ContextSelector selector(cc);
     int numContexts = cc.getNumContexts();
     int startIndex = cc.getContextIndex()*force.getNumBonds()/numContexts;
     int endIndex = (cc.getContextIndex()+1)*force.getNumBonds()/numContexts;
